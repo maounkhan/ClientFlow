@@ -161,15 +161,18 @@ export function TicketDetail() {
                   className="reply-form"
                   onSubmit={async (e) => {
                     e.preventDefault();
+                    const submittedReply = reply;
                     if (
                       await mutate(
                         "/tickets/" + t.id + "/comments",
                         "POST",
-                        { body: reply, internal_note: internal },
+                        { body: submittedReply, internal_note: internal },
                         internal ? "Internal note added" : "Reply sent",
                       )
                     )
-                      setReply("");
+                      setReply((current) =>
+                        current === submittedReply ? "" : current,
+                      );
                   }}
                 >
                   {!isClient && (

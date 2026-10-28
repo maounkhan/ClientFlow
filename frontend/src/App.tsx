@@ -77,9 +77,11 @@ export function App() {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
+  const refreshVersion = useRef(0);
   const activeTicketRef = useRef<string | null>(detailId);
   activeTicketRef.current = detailId;
   const loggedOut = () => {
+    refreshVersion.current++;
     setData(null);
     setDetailId(null);
     setDetail(null);
@@ -91,10 +93,12 @@ export function App() {
     return () => window.removeEventListener("session-expired", loggedOut);
   }, []);
   async function refresh() {
+    const version = ++refreshVersion.current;
     const [next, preferences] = await Promise.all([
       api("/workspace"),
       api("/preferences"),
     ]);
+    if (version !== refreshVersion.current) return next;
     setData(next);
     setPrefs(preferences);
     setConnected(true);
@@ -206,6 +210,7 @@ export function App() {
     message = "Changes saved",
   ) {
     if (busy) return;
+    refreshVersion.current++;
     setBusy(true);
     try {
       const result = await api(path, method, body);

@@ -32,7 +32,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { api, complete, csv, fullDate, Row, sla } from "../../api";
 import { priorities, statuses } from "../../app/constants";
 import { WorkspaceContext } from "../../app/WorkspaceContext";
-import { Avatar, Badge, Empty } from "../../components/ui";
+import { AsyncCheckbox, Avatar, Badge, Empty } from "../../components/ui";
 const ActivityChart = React.lazy(() =>
   import("../../Charts").then((m) => ({ default: m.ActivityChart })),
 );
@@ -531,15 +531,14 @@ export function Onboarding() {
                     className={`task ${t.completed ? "checked" : ""}`}
                     key={t.id}
                   >
-                    <input
-                      type="checkbox"
+                    <AsyncCheckbox
                       checked={t.completed}
                       disabled={locked || busy}
-                      onChange={(e) =>
+                      onCheckedChange={(completed) =>
                         mutate(
                           "/onboarding/" + o.id,
                           "PATCH",
-                          { task_id: t.id, completed: e.target.checked },
+                          { task_id: t.id, completed },
                           "Checklist updated",
                         )
                       }
@@ -1284,9 +1283,6 @@ export function SettingsPage() {
         setHealth(h.status === "UP" ? "Operational" : "Needs attention"),
       )
       .catch(() => setHealth("Unavailable"));
-    api("/preferences")
-      .then(setPrefs)
-      .catch(() => {});
   }, []);
   return (
     <>
@@ -1361,12 +1357,10 @@ export function SettingsPage() {
                   <strong>{p.label}</strong>
                   <small>{p.desc}</small>
                 </span>
-                <input
-                  type="checkbox"
+                <AsyncCheckbox
                   checked={prefs[p.key] !== false}
                   disabled={busy}
-                  onChange={async (e) => {
-                    const value = e.target.checked;
+                  onCheckedChange={async (value) => {
                     const result = await mutate(
                       "/preferences",
                       "PUT",

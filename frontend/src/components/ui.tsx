@@ -1,5 +1,5 @@
 import { FolderOpen, X } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { initials } from "../api";
 const slug = (s: string) => s.toLowerCase().replaceAll(" ", "-");
 export function Badge({
@@ -75,6 +75,38 @@ export function Field({
       {control}
       {hint && <small id={id + "-hint"}>{hint}</small>}
     </div>
+  );
+}
+export function AsyncCheckbox({
+  checked,
+  disabled = false,
+  onCheckedChange,
+  ...props
+}: Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type" | "checked" | "onChange"
+> & {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => Promise<unknown>;
+}) {
+  const [pendingValue, setPendingValue] = useState<boolean | null>(null);
+  return (
+    <input
+      {...props}
+      type="checkbox"
+      checked={pendingValue ?? checked}
+      disabled={disabled || pendingValue !== null}
+      aria-busy={pendingValue !== null}
+      onChange={async (e) => {
+        const value = e.currentTarget.checked;
+        setPendingValue(value);
+        try {
+          await onCheckedChange(value);
+        } finally {
+          setPendingValue(null);
+        }
+      }}
+    />
   );
 }
 export function Modal({

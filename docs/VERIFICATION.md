@@ -4,6 +4,7 @@
 
 - Clean packaged build using `./scripts/build`: locked dependency install, strict TypeScript compilation, Vite production bundling, Java compilation, Flyway migrations against H2, and executable Spring Boot packaging.
 - **17 backend integration tests, zero failures/errors**. Covered credential success/failure, unauthenticated access, CSRF enforcement, tenant read/write isolation, client organization coercion, private internal notes, role restrictions, ticket transitions and resolution requirements, SLA deadline calculation, first-response breaches, duplicate-escalation prevention, onboarding validation and review/activation, notification ownership, preferences, request validation, pagination, private document downloads, and metrics.
+- **6 Playwright browser tests, zero failures**, covering the complete role journey, onboarding, knowledge publishing, private document handling, mobile layout, delayed checkbox saves, failed-save rollback, and preservation of reply drafts during an in-flight request. The tests ran against an isolated packaged application and fresh in-memory database.
 - Frontend Prettier validation and shell syntax checks.
 - npm audit of production frontend dependencies: zero reported vulnerabilities at verification time. This is a dependency snapshot, not a production security certification.
 - Interactive browser checks: role sign-in/out; client request submission; manager assignment; engineer triage, internal/public comments, resolution; client confirmation; internal-note isolation; reload persistence; organization creation; checklist submission/review/approval/activation; SLA policy changes and manual checks; article publication and search; document upload and authenticated download; preferences surviving reload; matching/empty ticket search results; live dashboards and analytics.
@@ -13,9 +14,8 @@
 
 Screenshots of the actual packaged UI are in `docs/screenshots/`.
 
-## Included but not claimed as executed
+## Hosted checks and remaining integrations
 
-- The standard Playwright test suite is in `frontend/tests/demo.spec.ts`. Launching its separate headless Chromium process was blocked by the macOS execution sandbox (`MachPortRendezvousServer` permission denial). The equivalent core flows were executed using the interactive browser. Run `./scripts/test-e2e` from a normal terminal, or use the included CI workflow, for the Playwright report.
 - Docker/MySQL configuration is included; Docker is not installed in this environment, so the MySQL deployment was not executed.
-- The GitHub Actions workflow has not been dispatched on a hosted runner.
+- GitHub Actions runs the build, backend tests, and full browser suite on each push. The latest hosted result is available on the [Actions page](https://github.com/maounkhan/ClientFlow/actions).
 - External SSO, email, object storage, hosted deployment, queue delivery, monitoring services, and a demonstration video are not connected/generated. See `docs/SCOPE.md`.

@@ -29,4 +29,4 @@ Authentication/logout; four demo perspectives; server-side role and tenant check
 - Prometheus/Grafana dashboards, distributed tracing, or a deployment provider.
 - A public hosted URL or recorded demonstration video.
 
-The included CI workflow and Docker/MySQL configuration are source deliverables; they have not been run on a hosted CI runner or Docker engine in this environment. This application is ready for a **local demonstration**, not an assertion of production completion against every advanced requirement in the brief.
+GitHub Actions runs the build, backend integration tests, and browser suite on each push. The optional Docker/MySQL configuration has not been run against a Docker engine in this environment. This application is ready for a **local demonstration**, not an assertion of production completion against every advanced requirement in the brief.

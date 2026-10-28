@@ -10,7 +10,12 @@
   "production_build": "passed",
   "frontend_format": "passed",
   "browser_workflows": "verified using an interactive browser",
-  "playwright_runner": "blocked by macOS process sandbox; suite included",
+  "playwright_runner": "passed against isolated packaged application",
   "docker_mysql": "configuration included, not executed",
-  "source_folder": "/Users/aounkhan/Desktop/ClientFlow"
+  "browser_tests": {
+    "total": 6,
+    "failures": 0,
+    "errors": 0
+  },
+  "github_actions": "runs build, backend tests, and browser suite on push"
 }

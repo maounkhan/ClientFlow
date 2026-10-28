@@ -1,10 +1,15 @@
 import { test, expect, type Page } from "@playwright/test";
 async function signIn(page: Page, role = "Team manager") {
   await page.goto("/");
-  if (
-    await page.getByRole("button", { name: "Sign out", exact: true }).count()
-  ) {
-    await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  const signOut = page.getByRole("button", { name: "Sign out", exact: true });
+  const managerCard = page.getByRole("button", {
+    name: "Team manager Jordan Lee",
+    exact: true,
+  });
+  await expect(signOut.or(managerCard).first()).toBeVisible();
+  if (await signOut.isVisible()) {
+    await signOut.click();
+    await expect(managerCard).toBeVisible();
   }
   await page.getByRole("button", { name: new RegExp("^" + role) }).click();
   await page.getByRole("button", { name: "Enter workspace" }).click();
@@ -231,6 +236,7 @@ test("organization creation, onboarding, policy edit, private document, and arti
       page.getByText("Checklist updated", { exact: true }),
     ).toBeVisible();
     await expect(card.getByRole("checkbox").nth(i)).toBeChecked();
+    await expect(card.getByRole("checkbox").nth(i)).toBeEnabled();
   }
   await card.getByRole("button", { name: "Submit for review" }).click();
   await expect(card.getByText("In Review", { exact: true })).toBeVisible();
@@ -287,4 +293,122 @@ test("organization creation, onboarding, policy edit, private document, and arti
   await expect(
     page.getByText("Article published", { exact: true }),
   ).toBeVisible();
+});
+
+test("checkbox selection remains visible while saving and survives reload", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Open profile settings" }).click();
+  const checkbox = page.getByRole("checkbox", { name: "SLA alerts" });
+  await expect(checkbox).toBeChecked();
+  let release!: () => void;
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/v1/preferences", async (route) => {
+    if (route.request().method() !== "PUT") {
+      await route.continue();
+      return;
+    }
+    const response = await route.fetch();
+    await responseGate;
+    await route.fulfill({ response });
+  });
+  try {
+    await checkbox.uncheck();
+    await expect(checkbox).not.toBeChecked();
+    await expect(checkbox).toBeDisabled();
+  } finally {
+    release();
+  }
+  await expect(checkbox).toBeEnabled();
+  await page.unroute("**/api/v1/preferences");
+  await page.reload();
+  await expect(checkbox).not.toBeChecked();
+  await checkbox.check();
+  await expect(checkbox).toBeEnabled();
+});
+test("failed checkbox saves restore the persisted value and report the error", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Open profile settings" }).click();
+  const checkbox = page.getByRole("checkbox", { name: "Onboarding updates" });
+  await expect(checkbox).toBeChecked();
+  let release!: () => void;
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/v1/preferences", async (route) => {
+    if (route.request().method() === "PUT") {
+      await responseGate;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "Save temporarily unavailable" }),
+      });
+    } else await route.continue();
+  });
+  try {
+    await checkbox.uncheck();
+  } finally {
+    release();
+  }
+  await expect(page.getByRole("alert")).toContainText(
+    "Save temporarily unavailable",
+  );
+  await expect(checkbox).toBeChecked();
+  await expect(checkbox).toBeEnabled();
+  await page.unroute("**/api/v1/preferences");
+  await page.reload();
+  await expect(checkbox).toBeChecked();
+});
+
+test("sending a reply preserves a newer draft typed while the request is pending", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "New ticket", exact: true }).click();
+  const title = "Reply draft regression " + Date.now();
+  await page.getByLabel("Subject", { exact: true }).fill(title);
+  await page
+    .getByLabel("Description", { exact: true })
+    .fill("Verify support reply drafts survive an in-flight save.");
+  await page
+    .getByRole("button", { name: "Create ticket", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: title, exact: true }),
+  ).toBeVisible();
+  let release!: () => void;
+  let received!: () => void;
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const requestStarted = new Promise<void>((resolve) => {
+    received = resolve;
+  });
+  await page.route("**/api/v1/tickets/*/comments", async (route) => {
+    const response = await route.fetch();
+    received();
+    await responseGate;
+    await route.fulfill({ response });
+  });
+  const editor = page.getByLabel("Reply message");
+  await editor.fill("First submitted reply");
+  await page.getByRole("button", { name: "Send reply", exact: true }).click();
+  try {
+    await requestStarted;
+    await editor.fill("Keep this newer draft");
+  } finally {
+    release();
+  }
+  await expect(
+    page.getByText("First submitted reply", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Send reply", exact: true }),
+  ).toBeEnabled();
+  await expect(editor).toHaveValue("Keep this newer draft");
 });
