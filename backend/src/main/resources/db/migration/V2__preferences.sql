@@ -1,0 +1,1 @@
+CREATE TABLE user_preferences(user_id VARCHAR(40) PRIMARY KEY,show_ticket_updates BOOLEAN NOT NULL DEFAULT TRUE,show_sla_alerts BOOLEAN NOT NULL DEFAULT TRUE,show_onboarding BOOLEAN NOT NULL DEFAULT TRUE,FOREIGN KEY(user_id) REFERENCES users(id));

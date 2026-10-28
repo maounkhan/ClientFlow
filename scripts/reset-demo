@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+if [ "${1:-}" != "--confirm" ]; then printf 'Run scripts/reset-demo --confirm after stopping ClientFlow. Current demo data will be archived, then reseeded on next start.\n';exit 1;fi
+if curl -fsS "http://127.0.0.1:${PORT:-8080}/api/v1/auth/demo-info" >/dev/null 2>&1; then printf 'Stop ClientFlow before resetting the demo.\n';exit 1;fi
+if [ -d "$ROOT/backend/data" ]; then
+ mkdir -p "$ROOT/.tools/backups"
+ mv "$ROOT/backend/data" "$ROOT/.tools/backups/data-$(date +%Y%m%d-%H%M%S)"
+fi
+printf 'Previous demo data archived. Start ClientFlow to create fresh sample data.\n'

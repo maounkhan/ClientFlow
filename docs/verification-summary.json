@@ -1,0 +1,16 @@
+{
+  "application": "ClientFlow",
+  "date": "2026-10-28",
+  "local_url": "http://127.0.0.1:8080",
+  "backend_tests": {
+    "total": 17,
+    "failures": 0,
+    "errors": 0
+  },
+  "production_build": "passed",
+  "frontend_format": "passed",
+  "browser_workflows": "verified using an interactive browser",
+  "playwright_runner": "blocked by macOS process sandbox; suite included",
+  "docker_mysql": "configuration included, not executed",
+  "source_folder": "/Users/aounkhan/Desktop/ClientFlow"
+}

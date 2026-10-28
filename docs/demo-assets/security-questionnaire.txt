@@ -1,0 +1,10 @@
+CLIENTFLOW DEMO — FICTIONAL SECURITY QUESTIONNAIRE
+Organization: Northstar Labs
+Primary contact: Maya Patel
+
+Access control: Organization-scoped roles, least privilege, and audited access changes.
+Support process: Requests tracked through triage, investigation, resolution, and client confirmation.
+Integration review: Test connectivity in a sandbox before production provisioning.
+Go-live review: Confirm team access, escalation contacts, and service targets.
+
+This file contains fictional demo information only.

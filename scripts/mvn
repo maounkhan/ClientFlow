@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VERSION=3.9.9
+MAVEN="$ROOT/.tools/apache-maven-$VERSION"
+if [ ! -x "$MAVEN/bin/mvn" ]; then
+ mkdir -p "$ROOT/.tools"
+ curl -fL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$VERSION/apache-maven-$VERSION-bin.tar.gz" -o "$ROOT/.tools/maven.tar.gz"
+ tar -xzf "$ROOT/.tools/maven.tar.gz" -C "$ROOT/.tools"
+fi
+exec "$MAVEN/bin/mvn" "-Dmaven.repo.local=$ROOT/.tools/repository" "$@"

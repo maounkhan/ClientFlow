@@ -1,0 +1,10 @@
+.tools
+**/node_modules
+**/target
+**/dist
+**/data
+**/test-results
+**/playwright-report
+.git
+.env
+docs/screenshots

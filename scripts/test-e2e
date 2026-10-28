@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT/frontend"
+export PLAYWRIGHT_BROWSERS_PATH="$ROOT/.tools/browsers"
+npx playwright install chromium
+DEMO_URL="${DEMO_URL:-http://127.0.0.1:8080}" npx playwright test
